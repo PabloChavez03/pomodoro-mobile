@@ -1,20 +1,102 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from "react";
+import {
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Header } from "./src/components/header";
+import { Timer } from "./src/components/timer";
+import { alarmSound, onHandleSound } from "./src/utils/handle-sound";
+
+const colors = ["#F7DC6F", "#A2D9CE", "#D7BDE2"];
 
 export default function App() {
+  const [isWorking, setIsWorking] = useState(false);
+  const [time, setTime] = useState(25 * 60);
+  const [currentTime, setCurrentTime] = useState("POMO" | "BREAK" | "SHORT");
+  const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    let interval = null;
+    if (isActive) {
+      interval = setInterval(() => {
+        setTime((time) => time - 1);
+      }, 10);
+    } else {
+      clearInterval(interval);
+    }
+
+    if (time === 0) {
+      alarmSound();
+      setIsActive(false);
+      setIsWorking(prev => !prev);
+      if (currentTime === 1) {
+        setTime(5 * 60);
+      } else if (currentTime === 2) {
+        setTime(15 * 60);
+      } else {
+        setTime(25 * 60);
+      }
+    }
+
+    console.log(currentTime)
+
+    return () => clearInterval(interval);
+  }, [isActive, time]);
+
+  function onHandleStartAndStop() {
+    onHandleSound();
+    setIsActive(!isActive);
+    // setIsWorking(!isWorking);
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors[currentTime] }]}
+    >
+      <View style={{ flex: 1 }}>
+        <Text style={styles.text}>Pomodoro</Text>
+        <Header
+          updateTime={setTime}
+          currentTime={currentTime}
+          updateCurrentTime={setCurrentTime}
+        />
+        <Timer time={time} />
+        <TouchableOpacity style={styles.button} onPress={onHandleStartAndStop}>
+          <Text
+            style={{
+              fontWeight: "bold",
+              color: "white",
+              letterSpacing: 2,
+              fontSize: 16,
+            }}
+          >
+            {isActive ? "PAUSE" : "START"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: Platform.OS === "android" ? 25 : 0,
+    paddingHorizontal: 15,
+  },
+  text: {
+    fontSize: 32,
+    fontWeight: "bold",
+  },
+  button: {
+    backgroundColor: "#333",
+    padding: 15,
+    borderRadius: 15,
+    marginTop: 20,
+    alignItems: "center",
   },
 });
