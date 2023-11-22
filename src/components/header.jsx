@@ -1,4 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { colors } from "../utils/colors";
 
 /*
   Como tarea podria agregar logica que cuando el time llega a 0, dependiendo en la instancia en la que este lo mande a pomodoro o a otro break
@@ -21,7 +22,7 @@ export function Header ({ time, currentTime, updateCurrentTime, updateTime }) {
           key={index}
           style={[
             styles.items,
-            currentTime !== index && { borderColor: 'transparent' }]}
+            currentTime === index && { borderColor: colors[currentTime].border },]}
           onPress={() => handlePress(index)}>
           <Text style={{ fontWeight: currentTime === index ? 'bold' : 'normal' }}>{item}</Text>
         </TouchableOpacity>
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     padding: 5,
     width: "33%",
-    borderColor: '#fff',
+    borderColor: 'transparent',
     marginVertical: 20,
     borderRadius: 10,
     alignItems: 'center'
