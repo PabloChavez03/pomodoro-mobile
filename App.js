@@ -9,9 +9,8 @@ import {
 } from "react-native";
 import { Header } from "./src/components/header";
 import { Timer } from "./src/components/timer";
+import { colors } from "./src/utils/colors";
 import { alarmSound, onHandleSound } from "./src/utils/handle-sound";
-
-const colors = ["#F7DC6F", "#A2D9CE", "#D7BDE2"];
 
 export default function App() {
   const [isWorking, setIsWorking] = useState(false);
@@ -24,7 +23,7 @@ export default function App() {
     if (isActive) {
       interval = setInterval(() => {
         setTime((time) => time - 1);
-      }, 10);
+      }, 1000);
     } else {
       clearInterval(interval);
     }
@@ -42,41 +41,73 @@ export default function App() {
       }
     }
 
-    console.log(currentTime)
-
     return () => clearInterval(interval);
   }, [isActive, time]);
 
   function onHandleStartAndStop() {
     onHandleSound();
     setIsActive(!isActive);
-    // setIsWorking(!isWorking);
+    setIsWorking(!isWorking);
+  }
+
+  function onHandleReset() {
+    onHandleSound();
+    setIsActive(false);
+    setIsWorking(false);
+    if (currentTime === 1) {
+      setTime(5 * 60);
+    } else if (currentTime === 2) {
+      setTime(15 * 60);
+    } else {
+      setTime(25 * 60);
+    }
   }
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: colors[currentTime] }]}
+      style={[styles.container, { backgroundColor: colors[currentTime].bg }]}
     >
-      <View style={{ flex: 1 }}>
-        <Text style={styles.text}>Pomodoro</Text>
-        <Header
-          updateTime={setTime}
-          currentTime={currentTime}
-          updateCurrentTime={setCurrentTime}
-        />
-        <Timer time={time} />
-        <TouchableOpacity style={styles.button} onPress={onHandleStartAndStop}>
-          <Text
-            style={{
-              fontWeight: "bold",
-              color: "white",
-              letterSpacing: 2,
-              fontSize: 16,
+      <View style={{ display: "flex", alignItems: "center" ,flex: 1, position: "relative" }}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.text}>Pomodoro</Text>
+          <Header
+            updateTime={setTime}
+            currentTime={currentTime}
+            updateCurrentTime={setCurrentTime}
+          />
+          <Timer time={time} />
+          <TouchableOpacity style={styles.button} onPress={onHandleStartAndStop}>
+            <Text
+              style={{
+                fontWeight: "bold",
+                color: "white",
+                letterSpacing: 2,
+                fontSize: 16,
+              }}
+            >
+              {isActive ? "PAUSE" : "START"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {isWorking && (
+          <TouchableOpacity
+            style={{ position: "absolute", bottom: 40}}
+            onPress={() => {
+              onHandleReset();
             }}
           >
-            {isActive ? "PAUSE" : "START"}
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={{
+                fontWeight: "bold",
+                letterSpacing: 2,
+                fontSize: 16,
+              }}
+            >
+              RESTART
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -98,5 +129,5 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     marginTop: 20,
     alignItems: "center",
-  },
+  }
 });
